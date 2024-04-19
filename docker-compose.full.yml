@@ -1,0 +1,17 @@
+version: "3.8"
+
+include:
+  - path:
+      - docker-compose.infra.yml
+
+services:
+  kafka-test-app-ui:
+    build:
+      context: ./kafka-test-app-ui
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      KAFKA_CLIENT_ID: kafka-test-app-ui
+      KAFKA_BROKERS: kafka1:19092,kafka2:29092,kafka3:39092
+      KAFKA_TOPIC: UI_Messages
