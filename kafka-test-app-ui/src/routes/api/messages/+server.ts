@@ -4,6 +4,7 @@ import { type Message } from 'kafkajs';
 import type { KafkaMessageRequest, KafkaMessageResponse } from '$lib/types';
 import { env } from '$env/dynamic/private';
 import { getKafkaClient } from '$lib/server/kafkaClient';
+import type { UserTextMessage } from '$lib/server';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const producer = getKafkaClient().producer()
@@ -18,7 +19,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 		await producer.send({
-			topic: env.KAFKA_TOPIC,
+			topic: env.USER_TEXT_MESSAGES_TOPIC,
 			messages: getMessages(data),
 			acks: 1
 		});
@@ -26,7 +27,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		await producer.disconnect();
 		return json({ message: 'Message sent successfully.' } as KafkaMessageResponse);
 	} catch (error) {
-		console.error('Error sending message to Kafka:', error);
+		console.error(`Error sending message to Kafka topic ${env.USER_TEXT_MESSAGES_TOPIC}:`, error);
 		return json({ error: 'Failed to send message.' } as KafkaMessageResponse, { status: 500 });
 	}
 };
@@ -36,14 +37,18 @@ function getMessages(req: KafkaMessageRequest): Message[] {
 		return req.selectedPartitions.map((pId) => ({
 			partition: pId,
 			key: req.messageKey,
-			value: req.message,
+			value: JSON.stringify({
+				userText: req.message
+			} as UserTextMessage),
 			headers: req.headers.map((h) => ({ key: h.key, value: h.value }))
 		}));
 	} else {
 		return [
 			{
 				key: req.messageKey,
-				value: req.message,
+				value: JSON.stringify({
+					userText: req.message
+				} as UserTextMessage),
 				headers: req.headers.map((h) => ({ key: h.key, value: h.value }))
 			}
 		];

@@ -1,0 +1,12 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "KafkaTestApp",
+            "Group": "Servers",
+            "Host": "postgres",
+            "Port": 5432,
+            "MaintenanceDB": "kafka_test_app",
+            "Username": "foo"
+        }
+    }
+  }

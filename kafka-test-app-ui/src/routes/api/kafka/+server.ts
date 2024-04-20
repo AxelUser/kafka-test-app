@@ -9,7 +9,7 @@ export async function GET() {
 
 	try {
 		// Fetch metadata for the specific topic
-		const metadata = await admin.fetchTopicMetadata({ topics: [env.KAFKA_TOPIC] });
+		const metadata = await admin.fetchTopicMetadata({ topics: [env.USER_TEXT_MESSAGES_TOPIC] });
 		const partitions = metadata.topics[0].partitions
 			.map((partition) => +partition.partitionId)
 			.toSorted((a, b) => a - b);
