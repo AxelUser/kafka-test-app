@@ -5,9 +5,10 @@ import type { KafkaMessageRequest, KafkaMessageResponse } from '$lib/types';
 import { env } from '$env/dynamic/private';
 import { getKafkaClient } from '$lib/server/kafkaClient';
 import type { UserTextMessage } from '$lib/server';
+import { v4 as uuidv4 } from 'uuid';
 
 export const POST: RequestHandler = async ({ request }) => {
-	const producer = getKafkaClient().producer()
+	const producer = getKafkaClient().producer();
 	try {
 		await producer.connect();
 		const data: KafkaMessageRequest = await request.json();
@@ -33,10 +34,11 @@ export const POST: RequestHandler = async ({ request }) => {
 };
 
 function getMessages(req: KafkaMessageRequest): Message[] {
+	const messageKey = req.messageKey.trim() || uuidv4();
 	if (req.selectedPartitions && req.selectedPartitions.length > 0) {
 		return req.selectedPartitions.map((pId) => ({
 			partition: pId,
-			key: req.messageKey,
+			key: messageKey,
 			value: JSON.stringify({
 				userText: req.message
 			} as UserTextMessage),
@@ -45,7 +47,7 @@ function getMessages(req: KafkaMessageRequest): Message[] {
 	} else {
 		return [
 			{
-				key: req.messageKey,
+				key: messageKey,
 				value: JSON.stringify({
 					userText: req.message
 				} as UserTextMessage),

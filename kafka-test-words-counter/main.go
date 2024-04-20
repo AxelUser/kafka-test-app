@@ -58,18 +58,20 @@ func main() {
 			continue
 		}
 
+		key := string(m.Key)
+
 		wordCount := len(strings.Fields(msg.UserText))
 		fmt.Printf("Received: %s - Words: %d\n", msg.UserText, wordCount)
 
 		// Insert into database
-		if _, err := db.Exec("INSERT INTO user_text (text, word_count) VALUES ($1, $2)", msg.UserText, wordCount); err != nil {
+		if _, err := db.Exec("INSERT INTO user_text (id, text, word_count) VALUES ($1, $2, $3)", key, msg.UserText, wordCount); err != nil {
 			log.Printf("could not add user text into database: %v\n", err)
 		}
 	}
 }
 
 func ensureDBReady(db *sql.DB) {
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS user_text (id SERIAL PRIMARY KEY, text TEXT, word_count INT)"); err != nil {
+	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS user_text (id TEXT PRIMARY KEY, text TEXT, word_count INT)"); err != nil {
 		log.Fatal("could not create table: ", err)
 	}
 }
