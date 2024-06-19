@@ -13,7 +13,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-type Message struct {
+type UserTextMessage struct {
 	UserText string `json:"userText"`
 }
 
@@ -46,28 +46,43 @@ func main() {
 
 	// Processing loop
 	for {
-		m, err := r.ReadMessage(context.Background())
+		m, err := r.FetchMessage(context.Background())
 		if err != nil {
 			log.Printf("could not read message: %v\n", err)
 			continue
 		}
 
-		var msg Message
-		if err := json.Unmarshal(m.Value, &msg); err != nil {
-			log.Printf("could not unmarshal message: %v\n", err)
-			continue
+		err = handleMessage(m, db)
+		if err != nil {
+			log.Printf("failed to handle message: %v", err)
 		}
 
-		key := string(m.Key)
-
-		wordCount := len(strings.Fields(msg.UserText))
-		fmt.Printf("Received: %s - Words: %d\n", msg.UserText, wordCount)
-
-		// Insert into database
-		if _, err := db.Exec("INSERT INTO user_text (id, text, word_count) VALUES ($1, $2, $3)", key, msg.UserText, wordCount); err != nil {
-			log.Printf("could not add user text into database: %v\n", err)
+		err = r.CommitMessages(context.Background(), m)
+		if err != nil {
+			log.Printf("failed to commit message from topic %s, partition %d and offset %d", m.Topic, m.Partition, m.Offset)
+		} else {
+			log.Printf("committed message from topic %s, partition %d and offset %d", m.Topic, m.Partition, m.Offset)
 		}
 	}
+}
+
+func handleMessage(m kafka.Message, db *sql.DB) error {
+	var msg UserTextMessage
+	if err := json.Unmarshal(m.Value, &msg); err != nil {
+		return fmt.Errorf("could not unmarshal message: %w", err)
+	}
+
+	key := string(m.Key)
+
+	wordCount := len(strings.Fields(msg.UserText))
+	fmt.Printf("Received: %s - Words: %d\n", msg.UserText, wordCount)
+
+	// Insert into database
+	if _, err := db.Exec("INSERT INTO user_text (id, text, word_count) VALUES ($1, $2, $3)", key, msg.UserText, wordCount); err != nil {
+		return fmt.Errorf("could not add user text into database: %w", err)
+	}
+
+	return nil
 }
 
 func ensureDBReady(db *sql.DB) {
