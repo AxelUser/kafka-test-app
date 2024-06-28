@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/segmentio/kafka-go"
 )
@@ -18,6 +19,8 @@ type UserTextMessage struct {
 }
 
 func main() {
+	godotenv.Load()
+
 	kafkaBrokers := os.Getenv("KAFKA_BROKERS")
 	userTextMessagesTopic := os.Getenv("USER_TEXT_MESSAGES_TOPIC")
 	groupID := os.Getenv("KAFKA_GROUP_ID")
