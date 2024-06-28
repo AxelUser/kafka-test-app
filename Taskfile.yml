@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+  full-up:
+    cmds:
+      - docker-compose -f ./docker-compose.full.yml up -d
+
+  full-down:
+    cmds:
+      - docker-compose -f ./docker-compose.full.yml down
+
+  infra-up:
+    cmds:
+      - docker-compose -f ./docker-compose.infra.yml up -d
+
+  infra-down:
+    cmds:
+      - docker-compose -f ./docker-compose.infra.yml down
+
+  service-run:
+    cmds:
+      - go run ./kafka-test-words-counter/main.go
