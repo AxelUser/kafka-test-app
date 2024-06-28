@@ -3,7 +3,7 @@ version: '3'
 tasks:
   full-up:
     cmds:
-      - docker-compose -f ./docker-compose.full.yml up -d
+      - docker-compose -f ./docker-compose.full.yml up -d --build
 
   full-down:
     cmds:

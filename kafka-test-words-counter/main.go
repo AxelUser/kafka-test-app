@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -36,7 +37,7 @@ func main() {
 	log.Printf("Connected to Kafka topic %s, located on Kafka brokers %s.\n", userTextMessagesTopic, kafkaBrokers)
 
 	// Database setup
-	db, err := sql.Open("postgres", dbSource)
+	db, err := connectToDb(dbSource, 10, time.Second*5)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -88,8 +89,33 @@ func handleMessage(m kafka.Message, db *sql.DB) error {
 	return nil
 }
 
-func ensureDBReady(db *sql.DB) {
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS user_text (id TEXT PRIMARY KEY, text TEXT, word_count INT)"); err != nil {
-		log.Fatal("could not create table: ", err)
+func connectToDb(dbUri string, retryCount int, retryDelay time.Duration) (*sql.DB, error) {
+	attempt := 0
+
+	for {
+		attempt++
+		db, err := sql.Open("postgres", dbUri)
+
+		if err == nil {
+			err = ensureDBReady(db)
+		}
+
+		if err == nil {
+			return db, nil
+		}
+
+		if attempt > retryCount {
+			return nil, err
+		}
+
+		time.Sleep(retryDelay)
 	}
+}
+
+func ensureDBReady(db *sql.DB) error {
+	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS user_text (id TEXT PRIMARY KEY, text TEXT, word_count INT)"); err != nil {
+		return fmt.Errorf("could not create table: %w", err)
+	}
+
+	return nil
 }
