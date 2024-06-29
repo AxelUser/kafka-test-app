@@ -35,24 +35,28 @@ export const POST: RequestHandler = async ({ request }) => {
 
 function getMessages(req: KafkaMessageRequest): Message[] {
 	const messageKey = req.messageKey.trim() || uuidv4();
+
+	const value = JSON.stringify({
+			userText: req.message
+		} as UserTextMessage
+	);
+
+	const headers = Object.fromEntries(req.headers.map((h) => [ h.key + "", h.value + ""]));
+
 	if (req.selectedPartitions && req.selectedPartitions.length > 0) {
 		return req.selectedPartitions.map((pId) => ({
 			partition: pId,
 			key: messageKey,
-			value: JSON.stringify({
-				userText: req.message
-			} as UserTextMessage),
-			headers: req.headers.map((h) => ({ key: h.key, value: h.value }))
+			value: value,
+			headers: headers
 		}));
 	} else {
 		return [
 			{
 				key: messageKey,
-				value: JSON.stringify({
-					userText: req.message
-				} as UserTextMessage),
-				headers: req.headers.map((h) => ({ key: h.key, value: h.value }))
-			}
+				value: value,
+				headers: headers
+			} as Message
 		];
 	}
 }
