@@ -21,7 +21,7 @@ services:
       - kafka2
       - kafka3
 
-  kafka-test-words-counter-1:
+  kafka-test-words-counter:
     build:
       context: ./kafka-test-words-counter
       dockerfile: Dockerfile
@@ -35,18 +35,6 @@ services:
       - kafka1
       - kafka2
       - kafka3
-
-  kafka-test-words-counter-2:
-    build:
-      context: ./kafka-test-words-counter
-      dockerfile: Dockerfile
-    environment:
-      KAFKA_BROKERS: kafka1:19092,kafka2:29092,kafka3:39092
-      USER_TEXT_MESSAGES_TOPIC: UI_Messages
-      KAFKA_GROUP_ID: kafka-test-words-counter
-      DATABASE_URL: postgres://foo:bar@postgres:5432/kafka_test_app?sslmode=disable
-    depends_on:
-      - postgres
-      - kafka1
-      - kafka2
-      - kafka3
+    deploy:
+      mode: replicated
+      replicas: 2

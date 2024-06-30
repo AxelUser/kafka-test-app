@@ -41,3 +41,4 @@ Infrastructure:
     - `pg-admin` is available from `localhost:5050`.
         - login and password for UI are `admin@admin.com` и `root` respectively.
         - login and password for database are `foo` and `bar` respectively. Server in `pg-admin` is already registered, you just need type a password.
+6. When you finish playing, you can stop and remove all running containers via `docker-compose -f docker-compose.full.yml down --rmi=all --volumes`.

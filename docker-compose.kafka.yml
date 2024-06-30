@@ -22,6 +22,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: false
     ports:
       - "9092:9092"
 
@@ -38,6 +39,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: false
     ports:
       - "9093:9093"
 
@@ -54,6 +56,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: false
     ports:
       - "9094:9094"
 
@@ -77,4 +80,4 @@ services:
       - kafka3
     command: >
       bash -c 'cub kafka-ready -b kafka1:19092,kafka2:29092,kafka3:39092 1 40 && 
-               kafka-topics --create --if-not-exists --bootstrap-server kafka1:19092 --topic UI_Messages --partitions 12 --replication-factor 3'
+               kafka-topics --create --if-not-exists --bootstrap-server kafka1:19092 --topic UI_Messages --partitions 12 --replication-factor 3 --config retention.ms=120000 --config segment.ms=30000'

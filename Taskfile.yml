@@ -7,7 +7,7 @@ tasks:
 
   full-down:
     cmds:
-      - docker-compose -f ./docker-compose.full.yml down
+      - docker-compose -f ./docker-compose.full.yml down --rmi=all --volumes
 
   infra-up:
     cmds:
@@ -15,7 +15,7 @@ tasks:
 
   infra-down:
     cmds:
-      - docker-compose -f ./docker-compose.infra.yml down
+      - docker-compose -f ./docker-compose.infra.yml down --rmi=all --volumes
 
   service-run:
     cmds:
