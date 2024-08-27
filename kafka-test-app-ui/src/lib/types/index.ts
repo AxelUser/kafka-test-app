@@ -4,7 +4,7 @@ export interface Header {
 }
 
 export interface KafkaMessageRequest {
-	messageKey: string;
+	messageKey?: string;
 	message: string;
 	headers: Header[];
 	selectedPartitions: number[];

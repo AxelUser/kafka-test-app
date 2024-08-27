@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/segmentio/kafka-go"
@@ -76,7 +77,13 @@ func handleMessage(m kafka.Message, db *sql.DB) error {
 		return fmt.Errorf("could not unmarshal message: %w", err)
 	}
 
-	key := string(m.Key)
+	var key string
+
+	if m.Key == nil {
+		key = uuid.New().String()
+	} else {
+		key = string(m.Key)
+	}
 
 	wordCount := len(strings.Fields(msg.UserText))
 	fmt.Printf("Received: %s - Words: %d\n", msg.UserText, wordCount)
