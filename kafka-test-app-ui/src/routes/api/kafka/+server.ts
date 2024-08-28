@@ -1,11 +1,21 @@
 // src/routes/api/partitions/[topic].js
-import { getKafkaClient } from '$lib/server/kafkaClient';
+import { admin } from '$lib/kafka';
 import { env } from '$env/dynamic/private';
 import type { TopicInfo } from '$lib/types';
 
 export async function GET() {
-	const admin = getKafkaClient().admin();
-	await admin.connect();
+
+	try {
+		await admin.connect();
+	} catch (error) {
+		console.error('Error connecting to Kafka:', error);
+		return new Response(JSON.stringify({ error: 'Failed to connect to Kafka.' }), {
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			status: 500
+		});
+	}
 
 	try {
 		// Fetch metadata for the specific topic
@@ -15,8 +25,6 @@ export async function GET() {
 		
 		partitions.sort((a, b) => a - b);
 
-		await admin.disconnect();
-
 		return new Response(JSON.stringify({ partitions } as TopicInfo), {
 			headers: {
 				'Content-Type': 'application/json'
@@ -24,7 +32,6 @@ export async function GET() {
 			status: 200
 		});
 	} catch (error) {
-		await admin.disconnect();
 
 		return new Response(JSON.stringify({ error }), {
 			headers: {

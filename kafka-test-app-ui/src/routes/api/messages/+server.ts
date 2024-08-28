@@ -3,13 +3,18 @@ import { json } from '@sveltejs/kit';
 import { type Message } from 'kafkajs';
 import type { KafkaMessageRequest, KafkaMessageResponse } from '$lib/types';
 import { env } from '$env/dynamic/private';
-import { getKafkaClient } from '$lib/server/kafkaClient';
+import { producer } from '$lib/kafka';
 import type { UserTextMessage } from '$lib/server';
 
 export const POST: RequestHandler = async ({ request }) => {
-	const producer = getKafkaClient().producer();
 	try {
 		await producer.connect();
+	} catch (error) {
+		console.error('Error connecting to Kafka:', error);
+		return json({ error: 'Failed to connect to Kafka.' } as KafkaMessageResponse, { status: 500 });
+	}
+
+	try {
 		const data: KafkaMessageRequest = await request.json();
 
 		// Validate the data before sending to Kafka
@@ -21,14 +26,15 @@ export const POST: RequestHandler = async ({ request }) => {
 		await producer.send({
 			topic: env.USER_TEXT_MESSAGES_TOPIC,
 			messages: getMessages(data),
-			acks: 1
+			acks: -1
 		});
 
-		await producer.disconnect();
 		return json({ message: 'Message sent successfully.' } as KafkaMessageResponse);
 	} catch (error) {
 		console.error(`Error sending message to Kafka topic ${env.USER_TEXT_MESSAGES_TOPIC}:`, error);
 		return json({ error: 'Failed to send message.' } as KafkaMessageResponse, { status: 500 });
+	} finally { 
+		await producer.disconnect();
 	}
 };
 
