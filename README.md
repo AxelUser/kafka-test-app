@@ -1,4 +1,4 @@
-# Kafka Examples Application
+# Kafka Example Application
 
 This repository contains a fully packed demo application with Kafka producer and consumer. Producers is implemented as SvelteKit web UI application and consumer is a trivial Golang service.
 
