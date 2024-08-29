@@ -1,7 +1,10 @@
+import { building } from "$app/environment";
 import { connect } from "$lib/kafka";
 
-connect().then(() => {
-    console.log("Connected to Kafka.");
-}).catch((error) => {
-    console.error("Error connecting to Kafka:", error);
-});
+if (!building) {
+    connect().then(() => {
+        console.log("Connected to Kafka.");
+    }).catch((error) => {
+        console.error("Error connecting to Kafka:", error);
+    });
+}
